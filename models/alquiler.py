@@ -62,6 +62,28 @@ class AlquilerProducto(models.Model):
         if vals.get('name', 'Nuevo') == 'Nuevo':
             vals['name'] = self.env['ir.sequence'].next_by_code('alquiler.producto') or 'Nuevo'
         return super(AlquilerProducto, self).create(vals)
+    
+
+    @api.model
+    def _check_alquileres_vencidos(self):
+        # Buscar alquileres vencidos que aún están en estado 'alquiler'
+        alquileres_vencidos = self.search([
+            ('state', '=', 'alquiler'),
+            ('fecha_fin', '<', fields.Date.today())
+        ])
+        
+        # Actualizar el estado a 'no_entregado'
+        if alquileres_vencidos:
+            alquileres_vencidos.write({
+                'state': 'no_entregado'
+            })
+            
+            # Crear mensaje en el chatter para cada alquiler vencido
+            for alquiler in alquileres_vencidos:
+                alquiler.message_post(
+                    body="Alquiler marcado como 'No Entregado' por vencimiento",
+                    message_type='notification'
+                )
 
     #Cálculo automático de la fecha de fin
     @api.depends('fecha_inicio')
