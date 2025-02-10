@@ -20,6 +20,7 @@
         'views/alquiler_views.xml',
         'data/cron_jobs.xml',
     ],
+    'icon': '/alquiler_producto/static/description/rent.png', 
     'installable': True,
     'application': True,
 }
